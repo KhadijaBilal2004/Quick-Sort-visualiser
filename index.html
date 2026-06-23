@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort Visualizer - Premium Algorithm Studio</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-container">
+                <div class="logo-icon"></div>
+                <div class="logo-text">
+                    <h1>QuickSort<span>Studio</span></h1>
+                    <p>Interactive Recursion & Array visualizer</p>
+                </div>
+            </div>
+            <div class="view-switcher">
+                <button class="switcher-btn active" id="btn-array-view" onclick="switchView('array')">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                    Array View
+                </button>
+                <button class="switcher-btn" id="btn-tree-view" onclick="switchView('tree')">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.8L18 8l-6 3.2L6 8l6-3.2zm-6 5.5l5 2.7v5.5l-5-2.7V10.3zm7 8.2v-5.5l5-2.7v5.5l-5 2.7z"/></svg>
+                    Recursion Tree View
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard-grid">
+            <!-- Sidebar Controls -->
+            <aside class="control-panel card">
+                <h2>Controls</h2>
+                
+                <div class="control-group">
+                    <button class="btn btn-primary" id="btn-generate">Generate New Array</button>
+                </div>
+
+                <div class="control-group">
+                    <label for="array-size">Array Size: <span id="val-size">15</span></label>
+                    <input type="range" id="array-size" min="5" max="30" value="15">
+                </div>
+
+                <div class="control-group">
+                    <label for="speed">Animation Delay: <span id="val-speed">400ms</span></label>
+                    <input type="range" id="speed" min="50" max="2000" step="50" value="400">
+                </div>
+
+                <div class="control-group">
+                    <label for="pivot-strategy">Pivot Strategy</label>
+                    <div class="select-wrapper">
+                        <select id="pivot-strategy">
+                            <option value="last">Last Element (Standard)</option>
+                            <option value="first">First Element</option>
+                            <option value="random">Random Element</option>
+                            <option value="median">Median of Three</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="control-actions">
+                    <button class="btn btn-action btn-play" id="btn-play" title="Play">
+                        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <span>Start</span>
+                    </button>
+                    <button class="btn btn-action btn-pause" id="btn-pause" disabled title="Pause">
+                        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        <span>Pause</span>
+                    </button>
+                    <button class="btn btn-action btn-step" id="btn-step" title="Step Forward">
+                        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                        <span>Step</span>
+                    </button>
+                    <button class="btn btn-action btn-reset" id="btn-reset" title="Reset">
+                        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Stage -->
+            <section class="stage-area">
+                <!-- Array View Panel -->
+                <div class="view-panel card active" id="array-view-panel">
+                    <div class="panel-header">
+                        <h3>Array Visualization</h3>
+                        <div class="legend">
+                            <span class="legend-item"><span class="color-dot default"></span>Unsorted</span>
+                            <span class="legend-item"><span class="color-dot pivot"></span>Pivot</span>
+                            <span class="legend-item"><span class="color-dot comparing"></span>Comparing</span>
+                            <span class="legend-item"><span class="color-dot swapped"></span>Swapping</span>
+                            <span class="legend-item"><span class="color-dot sorted"></span>Sorted</span>
+                        </div>
+                    </div>
+                    <div class="visualization-wrapper">
+                        <div id="array-container" class="array-container"></div>
+                    </div>
+                </div>
+
+                <!-- Tree View Panel -->
+                <div class="view-panel card" id="tree-view-panel">
+                    <div class="panel-header">
+                        <h3>Recursion Tree</h3>
+                        <div class="legend">
+                            <span class="legend-item"><span class="color-dot tree-pending"></span>Pending</span>
+                            <span class="legend-item"><span class="color-dot tree-active"></span>Active Partition</span>
+                            <span class="legend-item"><span class="color-dot tree-done"></span>Completed</span>
+                        </div>
+                    </div>
+                    <div class="visualization-wrapper tree-wrapper">
+                        <svg id="tree-svg" width="100%" height="100%"></svg>
+                    </div>
+                </div>
+
+                <!-- Live Log & Info -->
+                <div class="meta-panel card">
+                    <div class="log-console">
+                        <h4>Status Console</h4>
+                        <div class="log-messages" id="log-console-messages">
+                            <div class="log-msg system">Visualizer initialized. Ready to start.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="complexity-info">
+                        <h4>Quick Sort Metrics</h4>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <span class="metric-label">Best Time</span>
+                                <span class="metric-value code">O(n log n)</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Average Time</span>
+                                <span class="metric-value code">O(n log n)</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Worst Time</span>
+                                <span class="metric-value code">O(n²)</span>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-label">Space Complexity</span>
+                                <span class="metric-value code">O(log n)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Code/Algorithm Guide Sidebar -->
+            <section class="code-panel card">
+                <h3>Quick Sort Algorithm</h3>
+                <div class="code-container">
+                    <pre><code class="language-javascript">
+<span class="line" id="code-qs"><b>function</b> quickSort(arr, low, high) {</span>
+<span class="line" id="code-cond">  <b>if</b> (low < high) {</span>
+<span class="line" id="code-part">    <b>let</b> pi = partition(arr, low, high);</span>
+<span class="line" id="code-left">    quickSort(arr, low, pi - 1);</span>
+<span class="line" id="code-right">    quickSort(arr, pi + 1, high);</span>
+<span class="line" id="code-end">  }</span>
+<span class="line">}</span>
+
+<span class="line" id="code-partition-def"><b>function</b> partition(arr, low, high) {</span>
+<span class="line" id="code-pivot">  <b>let</b> pivot = arr[high]; <span class="comment">// pivot strategy</span></span>
+<span class="line" id="code-i-ptr">  <b>let</b> i = low - 1;</span>
+<span class="line" id="code-loop">  <b>for</b> (<b>let</b> j = low; j < high; j++) {</span>
+<span class="line" id="code-compare">    <b>if</b> (arr[j] < pivot) {</span>
+<span class="line" id="code-increment">      i++;</span>
+<span class="line" id="code-swap-inner">      swap(arr, i, j);</span>
+<span class="line">    }</span>
+<span class="line">  }</span>
+<span class="line" id="code-swap-pivot">  swap(arr, i + 1, high);</span>
+<span class="line" id="code-return">  <b>return</b> i + 1;</span>
+<span class="line">}</span>
+                    </code></pre>
+                </div>
+                <div class="info-block">
+                    <p><strong>Quick Sort</strong> is a Divide and Conquer algorithm. It picks an element as a pivot and partitions the given array around the picked pivot by placing all smaller elements to its left and larger elements to its right.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Visualizer Script -->
+    <script src="script.js"></script>
+</body>
+</html>
