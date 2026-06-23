@@ -183,50 +183,42 @@ function renderTree() {
     treeSvg.innerHTML = '';
     if (Object.keys(treeNodes).length === 0) return;
 
-    // Calculate layout coordinates using in-order traversal for uniform horizontal spacing
-    let inOrderIndex = 0;
-    const horizontalSpacing = 65; // px between nodes horizontally
-    const levelHeight = 65;       // px between levels vertically
+    const svgWidth = treeSvg.clientWidth || treeSvg.parentElement.clientWidth || 800;
+    const padding = 50;
+    const levelHeight = 70;
     
-    function layoutNode(nodeId, depth) {
-        const node = treeNodes[nodeId];
-        if (!node) return;
-        
-        if (node.leftChildId !== null) {
-            layoutNode(node.leftChildId, depth + 1);
+    // Calculate stable layout coordinates based on the midpoint of the node's index range
+    const maxIndex = arraySize - 1;
+    const elementWidth = maxIndex > 0 ? (svgWidth - 2 * padding) / maxIndex : 0;
+    
+    // Assign coordinates
+    Object.values(treeNodes).forEach(node => {
+        // Calculate depth by traversing up parents
+        let depth = 0;
+        let pId = node.parentId;
+        while (pId !== null && treeNodes[pId]) {
+            depth++;
+            pId = treeNodes[pId].parentId;
         }
         
-        node.x = 40 + inOrderIndex * horizontalSpacing;
-        node.y = 35 + depth * levelHeight;
-        inOrderIndex++;
-        
-        if (node.rightChildId !== null) {
-            layoutNode(node.rightChildId, depth + 1);
-        }
-    }
-    
-    if (treeRootId !== null) {
-        layoutNode(treeRootId, 0);
-    }
+        const mid = (node.low + node.high) / 2;
+        node.x = maxIndex > 0 ? padding + mid * elementWidth : svgWidth / 2;
+        node.y = 40 + depth * levelHeight;
+    });
 
-    // Set the SVG dimensions based on the tree size to allow horizontal scrolling
-    const requiredWidth = 80 + inOrderIndex * horizontalSpacing;
-    const maxDepth = Math.max(...Object.values(treeNodes).map(n => Math.floor((n.y - 35) / levelHeight) || 0), 0);
+    const maxDepth = Math.max(...Object.values(treeNodes).map(n => {
+        let depth = 0;
+        let pId = n.parentId;
+        while (pId !== null && treeNodes[pId]) {
+            depth++;
+            pId = treeNodes[pId].parentId;
+        }
+        return depth;
+    }), 0);
+    
     const requiredHeight = 80 + maxDepth * levelHeight;
-
-    treeSvg.setAttribute('width', `${requiredWidth}px`);
+    treeSvg.setAttribute('width', '100%');
     treeSvg.setAttribute('height', `${requiredHeight}px`);
-    
-    // Auto-scroll the tree wrapper to center the active node
-    const activeNode = Object.values(treeNodes).find(n => n.state === 'active');
-    if (activeNode && treeSvg.parentElement) {
-        const wrapper = treeSvg.parentElement;
-        const targetScrollX = activeNode.x - wrapper.clientWidth / 2;
-        wrapper.scrollTo({
-            left: targetScrollX,
-            behavior: 'smooth'
-        });
-    }
 
     // Draw Links
     Object.values(treeNodes).forEach(node => {
