@@ -183,30 +183,49 @@ function renderTree() {
     treeSvg.innerHTML = '';
     if (Object.keys(treeNodes).length === 0) return;
 
-    // Calculate layout coordinates recursively
-    const svgWidth = treeSvg.clientWidth || 800;
-    const levelHeight = 70;
+    // Calculate layout coordinates using in-order traversal for uniform horizontal spacing
+    let inOrderIndex = 0;
+    const horizontalSpacing = 65; // px between nodes horizontally
+    const levelHeight = 65;       // px between levels vertically
     
-    // DFS to calculate coordinate spacing
-    function layoutNode(nodeId, depth, leftBound, rightBound) {
+    function layoutNode(nodeId, depth) {
         const node = treeNodes[nodeId];
         if (!node) return;
         
-        node.x = (leftBound + rightBound) / 2;
-        node.y = 35 + depth * levelHeight;
-        
-        const childSpacing = (rightBound - leftBound) / 2;
-        
         if (node.leftChildId !== null) {
-            layoutNode(node.leftChildId, depth + 1, leftBound, node.x);
+            layoutNode(node.leftChildId, depth + 1);
         }
+        
+        node.x = 40 + inOrderIndex * horizontalSpacing;
+        node.y = 35 + depth * levelHeight;
+        inOrderIndex++;
+        
         if (node.rightChildId !== null) {
-            layoutNode(node.rightChildId, depth + 1, node.x, rightBound);
+            layoutNode(node.rightChildId, depth + 1);
         }
     }
     
     if (treeRootId !== null) {
-        layoutNode(treeRootId, 0, 0, svgWidth);
+        layoutNode(treeRootId, 0);
+    }
+
+    // Set the SVG dimensions based on the tree size to allow horizontal scrolling
+    const requiredWidth = 80 + inOrderIndex * horizontalSpacing;
+    const maxDepth = Math.max(...Object.values(treeNodes).map(n => Math.floor((n.y - 35) / levelHeight) || 0), 0);
+    const requiredHeight = 80 + maxDepth * levelHeight;
+
+    treeSvg.setAttribute('width', `${requiredWidth}px`);
+    treeSvg.setAttribute('height', `${requiredHeight}px`);
+    
+    // Auto-scroll the tree wrapper to center the active node
+    const activeNode = Object.values(treeNodes).find(n => n.state === 'active');
+    if (activeNode && treeSvg.parentElement) {
+        const wrapper = treeSvg.parentElement;
+        const targetScrollX = activeNode.x - wrapper.clientWidth / 2;
+        wrapper.scrollTo({
+            left: targetScrollX,
+            behavior: 'smooth'
+        });
     }
 
     // Draw Links
